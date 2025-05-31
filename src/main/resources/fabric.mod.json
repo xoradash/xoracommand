@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "xoracommand",
+  "version": "${version}",
+  "name": "xoracommand",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/xoracommand/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-datagen": [
+      "com.xora.client.xoracommandDataGenerator"
+    ],
+    "client": [
+      "com.xora.client.xoracommandClient"
+    ],
+    "main": [
+      "com.xora.xoracommand"
+    ]
+  },
+  "mixins": [
+    "xoracommand.mixins.json",
+    {
+      "config": "xoracommand.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
