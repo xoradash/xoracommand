@@ -1,1 +1,1 @@
-%player% %count%
+%player% %1% %2% %3%

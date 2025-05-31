@@ -38,23 +38,24 @@ public class ConfigManager {
 
     private static void createDefaultCommandsFile() throws IOException {
         List<String> defaultCommands = List.of(
-                "/ecoins add %player% %count%",
-                "/give %player% dirt %count%"
+                "/give %player% %1% %2%",
+                "/msg %player% Вы получили %1% x%2%!",
+                "/ecoins add %player% %3%"
         );
         Files.write(COMMANDS_FILE, defaultCommands);
     }
 
     private static void createDefaultPlayersFile() throws IOException {
         List<String> defaultPlayers = List.of(
-                "xoradash 10",
-                "WPWolker 20"
+                "xoradash diamond 10 100",
+                "WPWolker iron_ingot %% 50"
         );
         Files.write(PLAYERS_FILE, defaultPlayers);
     }
 
     private static void createDefaultConstsFile() throws IOException {
         List<String> defaultConsts = List.of(
-                "%player% %count%"
+                "%player% %1% %2% %3%"
         );
         Files.write(CONSTS_FILE, defaultConsts);
     }
@@ -85,14 +86,27 @@ public class ConfigManager {
     }
 
     public static List<String> generateCommands() {
+        List<CommandResult> commandResults = generateCommandResults();
+        List<String> generatedCommands = new ArrayList<>();
+        
+        for (CommandResult result : commandResults) {
+            if (result.shouldExecute()) {
+                generatedCommands.add(result.getCommand());
+            }
+        }
+        
+        return generatedCommands;
+    }
+    
+    public static List<CommandResult> generateCommandResults() {
         List<String> commands = readCommands();
         List<String> players = readPlayers();
         List<String> consts = readConsts();
         
-        List<String> generatedCommands = new ArrayList<>();
+        List<CommandResult> commandResults = new ArrayList<>();
         
         if (consts.isEmpty()) {
-            return generatedCommands;
+            return commandResults;
         }
         
         String constLine = consts.get(0); // Берем первую строку констант
@@ -102,17 +116,74 @@ public class ConfigManager {
             String[] playerValues = playerLine.split("\\s+");
             
             for (String command : commands) {
-                String processedCommand = command;
-                
-                // Заменяем конс��анты на значения
-                for (int i = 0; i < constNames.length && i < playerValues.length; i++) {
-                    processedCommand = processedCommand.replace(constNames[i], playerValues[i]);
-                }
-                
-                generatedCommands.add(processedCommand);
+                CommandResult result = processCommandWithResult(command, constNames, playerValues);
+                commandResults.add(result);
             }
         }
         
-        return generatedCommands;
+        return commandResults;
+    }
+    
+    private static CommandResult processCommandWithResult(String command, String[] constNames, String[] playerValues) {
+        String processedCommand = command;
+        boolean shouldExecute = true;
+        
+        // Проходим по всем константам и заменяем их соответствующими значениями
+        for (int i = 0; i < constNames.length; i++) {
+            String constName = constNames[i];
+            
+            // Проверяем, используется ли эта константа в команде
+            if (processedCommand.contains(constName)) {
+                // Проверяем, есть ли значение на этой позиции
+                if (i < playerValues.length) {
+                    String value = playerValues[i];
+                    
+                    // Если значение %%, то команда не выполняется, но показываем её
+                    if (value.equals("%%")) {
+                        shouldExecute = false;
+                        processedCommand = processedCommand.replace(constName, "%%");
+                    } else {
+                        // Заменяем константу на значение
+                        processedCommand = processedCommand.replace(constName, value);
+                    }
+                } else {
+                    // Нет значения для этой константы
+                    shouldExecute = false;
+                    processedCommand = processedCommand.replace(constName, "???");
+                }
+            }
+        }
+        
+        return new CommandResult(processedCommand, shouldExecute);
+    }
+    
+    private static String processCommand(String command, String[] constNames, String[] playerValues) {
+        String processedCommand = command;
+        
+        // Проходим по всем константам и заменяем их соответствующими значениями
+        for (int i = 0; i < constNames.length; i++) {
+            String constName = constNames[i];
+            
+            // Проверяем, используется ��и эта константа в команде
+            if (processedCommand.contains(constName)) {
+                // Проверяем, есть ли значение на этой позиции
+                if (i < playerValues.length) {
+                    String value = playerValues[i];
+                    
+                    // Если значение %%, то команда не выполняется
+                    if (value.equals("%%")) {
+                        return null;
+                    }
+                    
+                    // Заменяем константу на значение
+                    processedCommand = processedCommand.replace(constName, value);
+                } else {
+                    // Нет значения для этой константы
+                    return null;
+                }
+            }
+        }
+        
+        return processedCommand;
     }
 }

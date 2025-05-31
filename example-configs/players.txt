@@ -1,3 +1,3 @@
-xoradash 10
-WPWolker 20
-TestPlayer 5
+xoradash diamond 10 100
+WPWolker iron_ingot %% 50
+TestPlayer gold_ingot 5 %%

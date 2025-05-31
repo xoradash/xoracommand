@@ -11,17 +11,20 @@
 
 Пример:
 ```
-/ecoins add %player% %count%
-/give %player% dirt %count%
+/give %player% %1% %2%
+/msg %player% Вы получили %1% x%2%!
+/ecoins add %player% %3%
 ```
 
 ### 2. `players.txt`
-Содержит данные игроков и значения через пробел. Каждая строка - отдельный набор данных.
+Содержит данные игрок��в и значения через пробел. Каждая строка - отдельный набор данных.
+Используйте `%%` для пропуска константы в определенной команде.
 
 Пример:
 ```
-xoradash 10
-WPWolker 20
+xoradash diamond 10 100
+WPWolker iron_ingot %% 50
+TestPlayer gold_ingot 5 %%
 ```
 
 ### 3. `consts.txt`
@@ -29,8 +32,22 @@ WPWolker 20
 
 Пример:
 ```
-%player% %count%
+%player% %1% %2% %3%
 ```
+
+## Пропуск констант с %%
+
+Новая функция позволяет пропускать определенные константы в командах:
+
+- `%%` в `players.txt` означает пропуск этой позиции
+- Команды, которые используют пропущенную константу, не будут выполнены
+- Остальные значения сдвигаются и используются в следующих константах
+
+**Пример:**
+- Константы: `%player% %1% %2% %3%`
+- Игрок: `WPWolker iron_ingot %% 50`
+- Команда: `/give %player% %1% %2%` → НЕ выполнится (из-за %% на позиции %2%)
+- Команда: `/ecoins add %player% %3%` → `/ecoins add WPWolker 50`
 
 ## Использование
 
@@ -51,15 +68,18 @@ WPWolker 20
 
 При выполнении команды `/xoracommand` с примерными конфигурациями выше будут выполнены следующие команды с задержкой 50мс между каждой:
 
-1. `/ecoins add xoradash 10`
-2. `/give xoradash dirt 10`
-3. `/msg xoradash Вы получили 10 монет!`
-4. `/ecoins add WPWolker 20`
-5. `/give WPWolker dirt 20`
-6. `/msg WPWolker Вы получили 20 монет!`
-7. `/ecoins add TestPlayer 5`
-8. `/give TestPlayer dirt 5`
-9. `/msg TestPlayer Вы получили 5 монет!`
+**Для xoradash (diamond 10 100):**
+1. `/give xoradash diamond 10`
+2. `/msg xoradash Вы получили diamond x10!`
+3. `/ecoins add xoradash 100`
+
+**Для WPWolker (iron_ingot %% 50):**
+1. `/msg WPWolker Вы получили iron_ingot x50!` (пропускается `/give` из-за %%)
+2. `/ecoins add WPWolker 50`
+
+**Для TestPlayer (gold_ingot 5 %%):**
+1. `/give TestPlayer gold_ingot 5`
+2. `/msg TestPlayer Вы получили gold_ingot x5!` (пропускается `/ecoins` из-за %%)
 
 ## Примеры конфигураций
 
