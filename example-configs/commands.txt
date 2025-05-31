@@ -1,0 +1,3 @@
+/ecoins add %player% %count%
+/give %player% dirt %count%
+/msg %player% Вы получили %count% монет!
